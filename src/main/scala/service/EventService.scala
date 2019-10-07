@@ -4,6 +4,10 @@ import java.io.{BufferedReader, BufferedWriter, InputStreamReader, OutputStreamW
 
 import app.Main.eventService
 import config.AppConfig
+import model.alias.Aliases.{EventSequence, UserId}
+import model.event.{Broadcast, Event, EventMessageRaw, Follow, PrivateMessage, StatusUpdate, Unfollow}
+import util.converters.MessageConverter
+
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import scala.collection.mutable
@@ -16,6 +20,7 @@ class EventService(socketService: ServerService) {
   var lastSeqNo = 0L // not vars!
 
   val messagesBySeqNo = new mutable.HashMap[Long, List[String]] // get rid of mutable?
+  val messagesBySeqNo2 = new mutable.HashMap[EventSequence, Event] // get rid of mutable?
   val followRegistry = new mutable.HashMap[Long, Set[Long]] // get rid of mutable?
 
   val eventsAsync = Future { // event module
@@ -27,19 +32,52 @@ class EventService(socketService: ServerService) {
 
     // have the socket accept connections
     // read lines from socket
-    // split message
+    // get the message sequence and split on it
+    // create a map of sequence nr -> message
+    // for each message act on it
+    // once done, close the reader and the socket
+
+//    val f = for {
+//      reader <- Try(new BufferedReader(new InputStreamReader(eventSocket.getInputStream())))
+//      _ = println(reader)
+//      iterator <- reader.lines().iterator().asScala
+//
+//    } yield reader
+//
+//     println(f)
+
 
     // remove exceptions throwing maybe use either?
     Try { // TODO: (functionality) handling input in Scala correctly also read about BufferedReader - is there a better way to read from Socket?
       // TODO: (read) BufferedReader
       val reader = new BufferedReader(new InputStreamReader(eventSocket.getInputStream()))
 
+     Iterator.continually(reader.readLine()).takeWhile(null != _).foreach{ payload => {
+        MessageConverter.convertEventMessageRawToEvent(EventMessageRaw(payload)) // TODO: (style) does it make sense to have this EventMessagrRaw at all?
+           .map(event => eventService.messagesBySeqNo2 += event.sequence -> event)
+         println(eventService.messagesBySeqNo2 + "\n\n")
+       }
+     }
+
+      for (i <- 1 to eventService.messagesBySeqNo2.size) {
+        eventService.messagesBySeqNo2.get(i) match {
+          case Some(Follow(sequence, fromUser, toUser)) => follow(sequence, fromUser, toUser)
+          case Some(Unfollow(sequence, fromUser, toUser)) => unfollow(sequence, fromUser, toUser)
+          case Some(Broadcast(sequence)) => broadcast(sequence)
+          case Some(PrivateMessage(sequence, fromUser, toUser)) => privateMessage(sequence, fromUser, toUser)
+          case Some(StatusUpdate(sequence, fromUser)) => statusUpdate(sequence, fromUser)
+          case Some(_) => ""
+          case None => ""
+        }
+      }
+
+
       Try {
         reader.lines().iterator().asScala.foreach { payload =>
-          println(s"Message received: $payload") // TODO: (functionality) add a logger
-          val message = payload.split("\\|").toList // extract splitter as a separate function
-          // actually this could be a case class that holds all of this
+          println(s"Message received: $payload")
+          val msg = MessageConverter.convertEventMessageRawToEvent(EventMessageRaw(payload))
 
+          val message = payload.split("\\|").toList
 
           eventService.messagesBySeqNo += message(0).toLong -> message
 
@@ -113,5 +151,10 @@ class EventService(socketService: ServerService) {
     if (eventSocket != null) eventSocket.close() // NPE handling here
   }
 
+  private def follow(sequence: EventSequence, fromUser: UserId, toUser: UserId) = println(s"FOLLOW! $sequence\n\n")
+  private def unfollow(sequence: EventSequence, fromUser: UserId, toUser: UserId) = println(s"UNFOLLOW! $sequence\n\n")
+  private def broadcast(sequence: EventSequence) = println(s"BROADCST! $sequence\n\n")
+  private def privateMessage(sequence: EventSequence, fromUser: UserId, toUser: UserId) = println(s"PRIV! $sequence\n\n")
+  private def statusUpdate(sequence: EventSequence, fromUser: UserId) = println(s"STATUS! $sequence\n\n")
 
 }

@@ -1,7 +1,7 @@
 package util.converters
 
 import error.event.EventMessageExtractionError
-import model.event.{Event, EventMessageRaw, Follow}
+import model.event.{Broadcast, Event, EventMessageRaw, Follow, PrivateMessage, StatusUpdate, Unfollow}
 
 object MessageConverter {
 
@@ -30,12 +30,12 @@ object MessageConverter {
     // TODO: (functionality) find a safe way to pass args to case classes - guarding condition maybe?
     // TODO: (functionality) finish up this handling
     messageAsArray(1) match { // safer handle? this could throw an excpetion if out of bounds, technically only called after correctness check though
-      case messageType if messageType.equalsIgnoreCase("f") => Right(Follow(messageAsArray(0), messageAsArray(2).toLong, messageAsArray(3).toLong))
+      case messageType if messageType.equalsIgnoreCase("f") => Right(Follow(messageAsArray(0).toLong, messageAsArray(2).toLong, messageAsArray(3).toLong))
       // TODO: (functionality) how can I guarantee there is no rubbish in the messageAsArray Items???
-      case messageType if messageType.equalsIgnoreCase("u") => ???
-      case messageType if messageType.equalsIgnoreCase("b") => ???
-      case messageType if messageType.equalsIgnoreCase("p") => ???
-      case messageType if messageType.equalsIgnoreCase("s") => ???
+      case messageType if messageType.equalsIgnoreCase("u") => Right(Unfollow(messageAsArray(0).toLong, messageAsArray(2).toLong, messageAsArray(3).toLong))
+      case messageType if messageType.equalsIgnoreCase("b") => Right(Broadcast(messageAsArray(0).toLong))
+      case messageType if messageType.equalsIgnoreCase("p") => Right(PrivateMessage(messageAsArray(0).toLong, messageAsArray(2).toLong, messageAsArray(3).toLong))
+      case messageType if messageType.equalsIgnoreCase("s") => Right(StatusUpdate(messageAsArray(0).toLong, messageAsArray(2).toLong))
       case messageType => Left(EventMessageExtractionError(s"unknown message type: $messageType"))
     }
   }

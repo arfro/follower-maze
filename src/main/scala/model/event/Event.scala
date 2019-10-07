@@ -7,7 +7,9 @@ case class EventMessageRaw(payload: String)
 
 // Product ADT
 
-trait Event
+trait Event {
+  val sequence: EventSequence
+}
 case class Broadcast(sequence: EventSequence) extends Event
 case class Follow(sequence: EventSequence, fromUser: UserId, toUser: UserId) extends Event
 case class Unfollow(sequence: EventSequence, fromUser: UserId, toUser: UserId) extends Event
