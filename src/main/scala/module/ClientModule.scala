@@ -1,11 +1,11 @@
 package module
 
-import service.{EventService, UserService}
+import service.{EventService, UserClientsService}
 
 trait ClientModule {
 
   socketModule: ServerModule =>
     val eventService = new EventService(socketModule.serverService)
-    val userService  = new UserService(socketModule.serverService)
+    val userService  = new UserClientsService(socketModule.serverService)
 
 }

@@ -2,7 +2,7 @@ package app
 
 import java.io.{BufferedReader, BufferedWriter, InputStreamReader, OutputStreamWriter}
 
-import module.{ConfigModule, ClientModule, ServerModule, UserModule}
+import module.{ConfigModule, ClientModule, ServerModule}
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration

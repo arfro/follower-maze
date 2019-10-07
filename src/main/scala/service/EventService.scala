@@ -14,17 +14,20 @@ import scala.collection.JavaConverters._
 class EventService(socketService: ServerService) {
 
   var lastSeqNo = 0L // not vars!
-  // does it have to be a TrieMap? Why?
 
   val messagesBySeqNo = new mutable.HashMap[Long, List[String]] // get rid of mutable?
   val followRegistry = new mutable.HashMap[Long, Set[Long]] // get rid of mutable?
 
-  // ------------- 1  event source
   val eventsAsync = Future { // event module
 
+    // TODO: (style) hook up config service here
     println(s"Listening for events on ${AppConfig.applicationConfig.eventPort}")
-    // new socket for each event?
-    val eventSocket = socketService.eventServerSocket.accept() // TODO: (read) ServerSocket.accept
+
+    val eventSocket = socketService.eventServerSocket.accept()
+
+    // have the socket accept connections
+    // read lines from socket
+    // split message
 
     // remove exceptions throwing maybe use either?
     Try { // TODO: (functionality) handling input in Scala correctly also read about BufferedReader - is there a better way to read from Socket?

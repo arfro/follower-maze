@@ -7,13 +7,13 @@ import scala.io.Source
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 
-class UserService(socketService: ServerService) {
+class UserClientsService(serverService: ServerService) {
 
   // ------------- N user-clients
   val clientsAsync = Future {
 
     println(s"Listening for client requests on ${AppConfig.applicationConfig.clientPort}") // logger instead of print
-    val serverSocket = socketService.usersServerSocket
+    val serverSocket = serverService.usersServerSocket
     println(s"server socket: $serverSocket")
     var maybeClientSocket = Option(serverSocket.accept())
     // TODO: (read) why is this an Option and a var? read about ServerSocket, Java class is there Scala equivalent?
@@ -26,8 +26,8 @@ class UserService(socketService: ServerService) {
         val userId = bufferedSource.bufferedReader().readLine()
 
         if (userId != null) {
-          socketService.clientPool.put(userId.toLong, clientSocket)
-          println(s"User connected: $userId (${socketService.clientPool.size} total)")
+          serverService.clientPool.put(userId.toLong, clientSocket)
+          println(s"User connected: $userId (${serverService.clientPool.size} total)")
         }
 
         maybeClientSocket = Option(serverSocket.accept())
