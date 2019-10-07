@@ -1,10 +1,9 @@
 package module
 
-import config.AppConfig
+import service.ConfigService
 
 trait ConfigModule {
 
-  // TODO: (style) take this out to configService
-  lazy val applicationConfig = AppConfig.applicationConfig // only call when needed
+  lazy val configService = new ConfigService
 
 }
