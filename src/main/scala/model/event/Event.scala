@@ -2,8 +2,6 @@ package model.event
 
 import model.alias.Aliases.{EventMessageRaw, EventSequence, UserId}
 
-// Product ADT
-
 trait Event {
   val sequence: EventSequence
   val eventMessageRaw: EventMessageRaw

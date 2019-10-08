@@ -5,13 +5,14 @@ import config.AppConfig
 import scala.concurrent.Future
 import scala.io.Source
 import scala.concurrent._
+
 import ExecutionContext.Implicits.global
 
 class UserClientsService(serverService: ServerService) {
 
   val clientsAsync = Future {
 
-    println(s"Listening for client requests on ${AppConfig.applicationConfig.usersClientPort}") // logger instead of print
+    println(s"Listening for client requests on ${AppConfig.applicationConfig.usersClientPort}")
     val usersSocket = serverService.usersServerSocket.accept()
     val bufferedSource = Source.fromInputStream(usersSocket.getInputStream())
 

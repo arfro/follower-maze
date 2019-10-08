@@ -7,7 +7,7 @@ import model.alias.Aliases.UserId
 
 import scala.collection.concurrent.TrieMap
 
-class ServerService(config: ApplicationConfig) { // easy to test - just change config
+class ServerService(config: ApplicationConfig) {
 
   val usersServerSocket = new ServerSocket(config.usersClientPort)
   val eventServerSocket = new ServerSocket(config.eventPort)

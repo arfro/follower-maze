@@ -1,7 +1,7 @@
 package app
 
 import module.{ClientModule, ConfigModule, ServerModule}
-import util.converters.DeadLetterQueue
+import util.DeadLetterQueue
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -11,9 +11,14 @@ object Main extends App with ConfigModule with ServerModule with ClientModule {
 
   override def main(args: Array[String]): Unit = {
 
+    /**
+     * General improvements/notes:
+     * - would add logging instead of printing
+     * */
+
     Await.result(Future.sequence(Seq(eventService.eventsAsync, userService.clientsAsync)), Duration.Inf)
 
-    println(s"Dead letter queue: ${DeadLetterQueue.deadLetterQueue}")
+    println(s"Dead letter queue: ${DeadLetterQueue.getDeadLetterQueue}")
 
   }
 

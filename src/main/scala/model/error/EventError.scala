@@ -1,4 +1,4 @@
-package error.event
+package model.error
 
 trait EventError
 case class EventMessageFormatError(message: String, rawEventMessage: String) extends EventError

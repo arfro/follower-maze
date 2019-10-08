@@ -2,10 +2,11 @@ package service
 
 import java.io.{BufferedReader, BufferedWriter, InputStreamReader, OutputStreamWriter}
 
-import error.event.EventMessageDeliveryError
 import model.alias.Aliases.{EventSequence, UserId}
+import model.error.EventMessageDeliveryError
 import model.event.{Broadcast, Event, Follow, PrivateMessage, StatusUpdate, Unfollow}
-import util.converters.{DeadLetterQueue, MessageConverter}
+import util.DeadLetterQueue
+import util.converters.MessageConverter
 
 import scala.concurrent._
 import scala.collection.mutable
@@ -15,8 +16,12 @@ import ExecutionContext.Implicits.global
 
 class EventService(serverService: ServerService) {
 
-  val followersRegistry = new mutable.HashMap[UserId, Set[UserId]] // get rid of mutable?
-  val messagesBySeqNo = new mutable.HashMap[EventSequence, Event] // get rid of mutable?
+  /***
+   * Improvements:
+   * - I prefer to use immutable data structures
+   * */
+  val followersRegistry = new mutable.HashMap[UserId, Set[UserId]]
+  val messagesBySeqNo = new mutable.HashMap[EventSequence, Event]
 
   val eventsAsync = Future {
       println(s"Listening for events on ${serverService.eventServerSocket.getLocalPort}")
@@ -37,18 +42,14 @@ class EventService(serverService: ServerService) {
       followersRegistry.put(follow.toUser, newFollowers)
 
       serverService.clientPool.get(follow.toUser) match {
-        case Some(user) => Right(
-          for {
-            socket <- serverService.clientPool.get(follow.toUser) // TODO: repetition fix
-            writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))
-            _ = writer.write(s"${follow.eventMessageRaw}\n") // add "toString" type class maybe to avoid hardcoding
-            _ = writer.flush()
-          } yield Unit
-        )
+        case Some(socket) => Right {
+            val writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))
+            writer.write(s"${follow.eventMessageRaw}\n") // add "toString" type class maybe to avoid hardcoding
+            writer.flush()
+          }
         case None => {
-          DeadLetterQueue.addToDeadLetterQueue(follow.eventMessageRaw)
-          println(s"Cannot deliver message. User ${follow.toUser} not online. Added to DLQ: ${follow.eventMessageRaw}")
-          Left(EventMessageDeliveryError("Cannot deliver message. User not online", s"${follow.eventMessageRaw}"))
+            DeadLetterQueue.addToDeadLetterQueue(follow.eventMessageRaw)
+            Left(EventMessageDeliveryError("Cannot deliver message. User not online", s"${follow.eventMessageRaw}"))
         }
       }
     }
@@ -63,12 +64,13 @@ class EventService(serverService: ServerService) {
     (for {
       (userId, socket) <- serverService.clientPool
       result = serverService.clientPool.get(userId) match {
-        case Some(userId) => Right{val writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))
+        case Some(userId) => Right{
+          val writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))
           writer.write(s"${broadcast.eventMessageRaw}\n")
-          writer.flush()}
+          writer.flush()
+        }
         case None => {
           DeadLetterQueue.addToDeadLetterQueue(broadcast.eventMessageRaw)
-          println(s"Cannot deliver message. User ${userId} not online. Added to DLQ: ${broadcast.eventMessageRaw}")
           Left(EventMessageDeliveryError("Cannot deliver message. User not online", s"${broadcast.eventMessageRaw}"))
         }
       }
@@ -87,9 +89,7 @@ class EventService(serverService: ServerService) {
       )
       case None => {
         DeadLetterQueue.addToDeadLetterQueue(privateMessage.eventMessageRaw)
-        println(s"Cannot deliver message. User ${privateMessage.toUser} not online. Added to DLQ: ${privateMessage.eventMessageRaw}")
         Left(EventMessageDeliveryError("Cannot deliver message. User not online", s"${privateMessage.eventMessageRaw}"))
-        // TODO: extract handling errors to a handler
       }
     }
   }
@@ -106,7 +106,6 @@ class EventService(serverService: ServerService) {
             }
             case None => {
               DeadLetterQueue.addToDeadLetterQueue(statusUpdate.eventMessageRaw)
-              println(s"Cannot deliver message. User ${follower} not online. Added to DLQ: ${statusUpdate.eventMessageRaw}")
               Left(EventMessageDeliveryError("Cannot deliver message. User not online", s"${statusUpdate.eventMessageRaw}"))
             }
           }
@@ -114,9 +113,13 @@ class EventService(serverService: ServerService) {
       }
 
 
+  /**
+   * Improvements:
+   * - not a big fan of using null even in "safe" cases as this one, I would probably seek another way, wouldn't ship like this
+   */
   private def readFromBufferToHashMap(reader: BufferedReader): Unit =
       Iterator.continually(reader.readLine())
-        .takeWhile(null != _) // remove null?
+        .takeWhile(null != _)
         .foreach { payload => {
           println(s"Message received: $payload") // should use logger instead of printing
           MessageConverter
@@ -124,7 +127,6 @@ class EventService(serverService: ServerService) {
                 case Right(event) => messagesBySeqNo += event.sequence -> event
                 case Left(errorMessage) => {
                   DeadLetterQueue.addToDeadLetterQueue(errorMessage.rawEventMessage)
-                  println(s"Cannot deliver message. Message malformed. Added to DLQ: ${errorMessage.rawEventMessage}")
                   Left(EventMessageDeliveryError("Cannot deliver message. Message malformed.", s"${errorMessage.rawEventMessage}"))
                 }
               }
@@ -132,6 +134,11 @@ class EventService(serverService: ServerService) {
           }
 
 
+  /**
+   * Improvements:
+   * - I would add proper error handling here so that the return type is an Either rather than Unit. The infrastructure
+   * is pretty much ready in the called functions
+   * */
   private def playEventsFromHashMapInSequence(hashMap: mutable.HashMap[EventSequence, Event]): Unit = {
     for (i <- 1 to hashMap.size) {
       hashMap.get(i) match {
@@ -145,7 +152,7 @@ class EventService(serverService: ServerService) {
           privateMessage(PrivateMessage(sequence, fromUser, toUser, raw))
         case Some(StatusUpdate(sequence, fromUser, raw)) =>
           statusUpdate(StatusUpdate(sequence, fromUser, raw))
-        case _ => Unit // TODO: (functionality) proper handling for the errors
+        case _ => Unit
       }
     }
   }
