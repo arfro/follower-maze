@@ -28,6 +28,7 @@ class UserClientsService(serverService: ServerService) {
         if (userId != null) {
           serverService.clientPool.put(userId.toLong, clientSocket)
           println(s"User connected: $userId (${serverService.clientPool.size} total)")
+          println(s"Client pool: ${serverService.clientPool}")
         }
 
         maybeClientSocket = Option(serverSocket.accept())
