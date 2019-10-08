@@ -2,7 +2,6 @@ package service
 
 import java.io.{BufferedReader, BufferedWriter, InputStreamReader, OutputStreamWriter}
 
-import app.Main.eventService
 import model.alias.Aliases.{EventSequence, UserId}
 import model.event.{Broadcast, Event, EventMessageRaw, Follow, PrivateMessage, StatusUpdate, Unfollow}
 import util.converters.MessageConverter
@@ -15,13 +14,11 @@ import scala.util.Try
 
 class EventService(serverService: ServerService) {
 
-  val followRegistry = new mutable.HashMap[UserId, Set[UserId]] // get rid of mutable?
+  val followersRegistry = new mutable.HashMap[UserId, Set[UserId]] // get rid of mutable?
   val messagesBySeqNo = new mutable.HashMap[EventSequence, Event] // get rid of mutable?
 
   val eventsAsync = Future {
-
     println(s"Listening for events on ${serverService.eventServerSocket.getLocalPort}")
-
     val eventSocket = serverService.eventServerSocket.accept()
 
       for {
@@ -34,9 +31,9 @@ class EventService(serverService: ServerService) {
   }
 
   private def follow(sequence: EventSequence, fromUser: UserId, toUser: UserId, followers: mutable.HashMap[UserId, Set[UserId]]): Unit = {
-      val followersOfUser = eventService.followRegistry.getOrElse(toUser, Set.empty)
+      val followersOfUser = followersRegistry.getOrElse(toUser, Set.empty)
       val newFollowers = followersOfUser + fromUser
-      eventService.followRegistry.put(toUser, newFollowers)
+      followersRegistry.put(toUser, newFollowers)
 
       for {
         socket <- serverService.clientPool.get(toUser)
@@ -47,9 +44,9 @@ class EventService(serverService: ServerService) {
     }
 
   private def unfollow(sequence: EventSequence, fromUser: UserId, toUser: UserId) = {
-      val followers = eventService.followRegistry.getOrElse(toUser, Set.empty)
+      val followers = followersRegistry.getOrElse(toUser, Set.empty)
       val newFollowers = followers - fromUser
-      eventService.followRegistry.put(toUser, newFollowers)
+      followersRegistry.put(toUser, newFollowers)
   }
 
   private def broadcast(sequence: EventSequence): Unit = {
@@ -89,19 +86,19 @@ class EventService(serverService: ServerService) {
           println(s"Message received: $payload") // should use logger instead of printing
           MessageConverter
             .convertEventMessageRawToEvent(EventMessageRaw(payload)) // TODO: (style) does it make sense to have this EventMessagrRaw at all?
-            .map(event => eventService.messagesBySeqNo += event.sequence -> event)
+            .map(event => messagesBySeqNo += event.sequence -> event)
           }
         }
 
   private def playEventsFromHashMapInSequence(hashMap: mutable.HashMap[EventSequence, Event]): Unit = {
     for (i <- 1 to hashMap.size) {
       hashMap.get(i) match {
-        case Some(Follow(sequence, fromUser, toUser)) => follow(sequence, fromUser, toUser, followRegistry)
+        case Some(Follow(sequence, fromUser, toUser)) => follow(sequence, fromUser, toUser, followersRegistry)
         case Some(Unfollow(sequence, fromUser, toUser)) => unfollow(sequence, fromUser, toUser)
         case Some(Broadcast(sequence)) => broadcast(sequence)
         case Some(PrivateMessage(sequence, fromUser, toUser)) => privateMessage(sequence, fromUser, toUser)
-        case Some(StatusUpdate(sequence, fromUser)) => statusUpdate(sequence, fromUser, followRegistry)
-        case _ => Unit // proper handling for the errors
+        case Some(StatusUpdate(sequence, fromUser)) => statusUpdate(sequence, fromUser, followersRegistry)
+        case _ => Unit // TODO: (functionality) proper handling for the errors
       }
     }
   }
