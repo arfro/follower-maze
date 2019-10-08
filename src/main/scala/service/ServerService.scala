@@ -9,8 +9,8 @@ import scala.collection.concurrent.TrieMap
 
 class ServerService(config: ApplicationConfig) { // easy to test - just change config
 
-  val usersServerSocket = new ServerSocket(config.clientPort)
+  val usersServerSocket = new ServerSocket(config.usersClientPort)
   val eventServerSocket = new ServerSocket(config.eventPort)
 
-  val clientPool = new TrieMap[UserId, Socket] // I like this choice. TrieMap is good for a concurrent environment
+  val clientPool = new TrieMap[UserId, Socket]
 }

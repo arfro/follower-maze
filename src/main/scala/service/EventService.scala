@@ -7,10 +7,11 @@ import model.event.{Broadcast, Event, EventMessageRaw, Follow, PrivateMessage, S
 import util.converters.MessageConverter
 
 import scala.concurrent._
-import ExecutionContext.Implicits.global
 import scala.collection.mutable
 import scala.concurrent.Future
 import scala.util.Try
+
+import ExecutionContext.Implicits.global
 
 class EventService(serverService: ServerService) {
 
