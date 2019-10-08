@@ -1,1 +1,3 @@
-(1 to 1000)
+var deadLetterQueue: List[Int] = List()
+
+deadLetterQueue :+ 3

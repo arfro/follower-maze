@@ -1,5 +1,5 @@
 package error.event
 
 trait EventError
-trait EventMessageError extends EventError
-case class EventMessageExtractionError(message: String) extends EventMessageError
+case class EventMessageFormatError(message: String, rawEventMessage: String) extends EventError
+case class EventMessageDeliveryError(message: String, rawEventMessage: String) extends EventError

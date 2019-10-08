@@ -1,21 +1,22 @@
 package util.converters
 
-import error.event.EventMessageExtractionError
-import model.event.{Broadcast, Event, EventMessageRaw, Follow, PrivateMessage, StatusUpdate, Unfollow}
+import error.event.EventMessageFormatError
+import model.alias.Aliases.EventMessageRaw
+import model.event.{Broadcast, Event, Follow, PrivateMessage, StatusUpdate, Unfollow}
 
 object MessageConverter {
 
-  def convertEventMessageRawToEvent(rawMessage: EventMessageRaw): Either[EventMessageExtractionError, Event] =
-    createEvent(rawMessage.payload)
+  def convertEventMessageRawToEvent(rawEventMessage: EventMessageRaw): Either[EventMessageFormatError, Event] =
+    createEvent(rawEventMessage)
 
 
-  private def createEvent(rawMessage: String): Either[EventMessageExtractionError, Event] = {
-    val messageAsArray = rawMessage.split("\\|")
+  private def createEvent(rawEventMessage: String): Either[EventMessageFormatError, Event] = {
+    val messageAsArray = rawEventMessage.split("\\|")
 
-    messageAsArray match { // TODO: (style) use a for comprehension here to make it more readable?
-      case arr if !isCorrectMessageFormat(arr) => // TODO: (functionality) add to dead letter queue in the function that calls convertEventMessageRawToEvent
-        Left(EventMessageExtractionError(s"incorrect message format: ${rawMessage}"))
-      case arr => createEventInner(arr) // there can be an EventMessageExtractionError down the line!! cant just cast Right here....
+    messageAsArray match {
+      case arr if !isCorrectMessageFormat(arr) =>
+        Left(EventMessageFormatError(s"incorrect message format: ${rawEventMessage}", rawEventMessage))
+      case arr => createEventInner(arr, rawEventMessage) // there can be an EventMessageExtractionError down the line!! cant just cast Right here....
     }
   }
 
@@ -26,17 +27,21 @@ object MessageConverter {
       case _ => true
     }
 
-  private def createEventInner(messageAsArray: Array[String]): Either[EventMessageExtractionError, Event] = {
+  private def createEventInner(messageAsArray: Array[String], rawEventMessage: EventMessageRaw): Either[EventMessageFormatError, Event] = {
     // TODO: (functionality) find a safe way to pass args to case classes - guarding condition maybe?
     // TODO: (functionality) finish up this handling
     messageAsArray(1) match { // safer handle? this could throw an excpetion if out of bounds, technically only called after correctness check though
-      case messageType if messageType.equalsIgnoreCase("f") => Right(Follow(messageAsArray(0).toLong, messageAsArray(2).toLong, messageAsArray(3).toLong))
-      // TODO: (functionality) how can I guarantee there is no rubbish in the messageAsArray Items???
-      case messageType if messageType.equalsIgnoreCase("u") => Right(Unfollow(messageAsArray(0).toLong, messageAsArray(2).toLong, messageAsArray(3).toLong))
-      case messageType if messageType.equalsIgnoreCase("b") => Right(Broadcast(messageAsArray(0).toLong))
-      case messageType if messageType.equalsIgnoreCase("p") => Right(PrivateMessage(messageAsArray(0).toLong, messageAsArray(2).toLong, messageAsArray(3).toLong))
-      case messageType if messageType.equalsIgnoreCase("s") => Right(StatusUpdate(messageAsArray(0).toLong, messageAsArray(2).toLong))
-      case messageType => Left(EventMessageExtractionError(s"unknown message type: $messageType"))
+      case messageType if messageType.equalsIgnoreCase("f") =>
+        Right(Follow(messageAsArray(0).toLong, messageAsArray(2).toLong, messageAsArray(3).toLong, rawEventMessage))
+      case messageType if messageType.equalsIgnoreCase("u") =>
+        Right(Unfollow(messageAsArray(0).toLong, messageAsArray(2).toLong, messageAsArray(3).toLong, rawEventMessage))
+      case messageType if messageType.equalsIgnoreCase("b") =>
+        Right(Broadcast(messageAsArray(0).toLong, rawEventMessage))
+      case messageType if messageType.equalsIgnoreCase("p") =>
+        Right(PrivateMessage(messageAsArray(0).toLong, messageAsArray(2).toLong, messageAsArray(3).toLong, rawEventMessage))
+      case messageType if messageType.equalsIgnoreCase("s") =>
+        Right(StatusUpdate(messageAsArray(0).toLong, messageAsArray(2).toLong, rawEventMessage))
+      case messageType => Left(EventMessageFormatError(s"unknown message type: $messageType", messageAsArray.mkString("|")))
     }
   }
 
