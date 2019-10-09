@@ -1,9 +1,5 @@
 package service
 
-import java.net.{ServerSocket, Socket}
-
-import config.AppConfig
-
 import scala.concurrent.Future
 import scala.io.Source
 import scala.concurrent._

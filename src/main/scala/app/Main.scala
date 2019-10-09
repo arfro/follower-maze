@@ -1,7 +1,6 @@
 package app
 
 import module.{ClientModule, ConfigModule, ServerModule}
-import util.DeadLetterQueue
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -21,8 +20,6 @@ object Main extends App with ConfigModule with ServerModule with ClientModule {
          eventService.eventsAsync(serverService),
          userService.clientsAsync(serverService))),
        Duration.Inf)
-
-    println(s"Dead letter queue: ${DeadLetterQueue.getDeadLetterQueue}")
 
   }
 

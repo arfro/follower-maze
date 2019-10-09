@@ -25,25 +25,20 @@ trait DeadLetterQueueSpecFixture extends MockitoSugar {
   val clientServerSocketMock = mock[ServerSocket]
   val clientSocketMock = mock[Socket]
 
-  val inputStreamEvent = new ByteArrayInputStream("32|x|23|23\n".getBytes())
   val outputStreamEvent = new ByteArrayOutputStream()
 
-  val inputStreamClient = new ByteArrayInputStream("32\n".getBytes())
   val outputStreamClient = new ByteArrayOutputStream()
-
-  Mockito.when(config.eventPort).thenReturn(24222)
-  Mockito.when(config.usersClientPort).thenReturn(24223)
 
   //event
   Mockito.when(eventServerSocketMock.getLocalPort).thenReturn(24222)
   Mockito.when(eventServerSocketMock.accept()).thenReturn(eventSocketMock)
-  Mockito.when(eventSocketMock.getLocalPort).thenReturn(24223)
-  Mockito.when(eventSocketMock.getInputStream()).thenReturn(inputStreamEvent)
+  Mockito.when(eventSocketMock.getLocalPort).thenReturn(24222)
   Mockito.when(eventSocketMock.getOutputStream()).thenReturn(outputStreamEvent)
 
   // client
+  Mockito.when(clientServerSocketMock.getLocalPort).thenReturn(24224)
   Mockito.when(clientServerSocketMock.accept()).thenReturn(clientSocketMock)
-  Mockito.when(clientSocketMock.getInputStream).thenReturn(inputStreamClient)
+  Mockito.when(clientSocketMock.getLocalPort).thenReturn(24224)
   Mockito.when(clientSocketMock.getOutputStream).thenReturn(outputStreamClient)
 
 
@@ -54,29 +49,23 @@ trait DeadLetterQueueSpecFixture extends MockitoSugar {
     override val clientPool: TrieMap[UserId, Socket] = new TrieMap()
   }
 
-
   val eventService = new EventService(serverService)
 
-  println(eventService)
-  println(serverService.eventServerSocket.getLocalPort)
-
-
-  Await.result(Future.sequence(
+  def run() = Await.result(Future.sequence(
     Seq(
-      eventService.eventsAsync(serverService),
-      userService.clientsAsync(serverService))),
+      userService.clientsAsync(serverService),
+      eventService.eventsAsync(serverService))),
     Duration.Inf)
 
-  val writer = new BufferedWriter(new OutputStreamWriter(eventSocketMock.getOutputStream()))
-  writer.write(s"sasdasd\n")
-  writer.flush()
-
-  def sendMessageToEventSocket(message: String): Unit ={
-
+  def sendMessageToEventSocket(message: String): Unit = {
+    val inputStreamEvent = new ByteArrayInputStream(s"$message\n".getBytes())
+    Mockito.when(eventSocketMock.getInputStream).thenReturn(inputStreamEvent)
   }
 
-  def sendMessageToClientSocket(message: String) = {
-
+  def sendMessageToClientSocket(message: String): Unit = {
+    val inputStreamClient = new ByteArrayInputStream(s"$message\n".getBytes())
+    Mockito.when(clientSocketMock.getInputStream).thenReturn(inputStreamClient)
   }
+
 
 }
