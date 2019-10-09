@@ -4,7 +4,6 @@ import fixtures.DeadLetterQueueSpecFixture
 import tests.UnitTest
 import util.DeadLetterQueue
 
-// This contains only dead letter queue tests
 class EventServiceSpec extends UnitTest with DeadLetterQueueSpecFixture {
 
   "DeadLetterQueue" should "contain the message if format is incorrect - empty Strings as parts of a message" in {
@@ -39,7 +38,7 @@ class EventServiceSpec extends UnitTest with DeadLetterQueueSpecFixture {
     run()
     DeadLetterQueue.getDeadLetterQueue should contain (message)
   }
-  it should "be not contain the message if it is delivered correctly" in {
+  it should "not contain the message if it is delivered correctly" in {
     val userId = "4"
     val secondUserId = "44"
     val message = s"1|f|$userId|$secondUserId"

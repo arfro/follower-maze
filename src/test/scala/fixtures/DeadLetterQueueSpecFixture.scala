@@ -1,33 +1,32 @@
 package fixtures
 
-import java.io.{BufferedWriter, ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStreamWriter}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.net.{ServerSocket, Socket}
 
-import app.Main.{eventService, serverService, userService}
 import config.ApplicationConfig
 import model.alias.Aliases.UserId
-import org.mockito.Mockito
-import service.{EventService, ServerService}
+import service.{EventService, ServerService, UserClientsService}
+
 import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.Mockito
 
 import scala.collection.concurrent.TrieMap
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
+
+import ExecutionContext.Implicits.global
 
 trait DeadLetterQueueSpecFixture extends MockitoSugar {
 
-  val config = mock[ApplicationConfig]
+  private val config = mock[ApplicationConfig]
 
-  val eventServerSocketMock = mock[ServerSocket]
-  val eventSocketMock = mock[Socket]
+  private val eventServerSocketMock = mock[ServerSocket]
+  private val eventSocketMock = mock[Socket]
+  private val outputStreamEvent = new ByteArrayOutputStream()
 
-  val clientServerSocketMock = mock[ServerSocket]
-  val clientSocketMock = mock[Socket]
-
-  val outputStreamEvent = new ByteArrayOutputStream()
-
-  val outputStreamClient = new ByteArrayOutputStream()
+  private val clientServerSocketMock = mock[ServerSocket]
+  private val clientSocketMock = mock[Socket]
+  private val outputStreamClient = new ByteArrayOutputStream()
 
   //event
   Mockito.when(eventServerSocketMock.getLocalPort).thenReturn(24222)
@@ -42,14 +41,14 @@ trait DeadLetterQueueSpecFixture extends MockitoSugar {
   Mockito.when(clientSocketMock.getOutputStream).thenReturn(outputStreamClient)
 
 
-
-  val serverService = new ServerService(config) {
+  private val serverService = new ServerService(config) {
     override val eventServerSocket: ServerSocket = eventServerSocketMock
     override val usersServerSocket: ServerSocket = clientServerSocketMock
     override val clientPool: TrieMap[UserId, Socket] = new TrieMap()
   }
 
-  val eventService = new EventService(serverService)
+  private val eventService = new EventService(serverService)
+  private val userService = new UserClientsService(serverService)
 
   def run() = Await.result(Future.sequence(
     Seq(

@@ -11,7 +11,7 @@ object DeadLetterQueue {
   private var deadLetterQueue: List[EventMessageRaw] = List()
 
   def addToDeadLetterQueue(rawEvent: EventMessageRaw): Unit = {
-    println(s"Cannot deliver message. Added to DLQ: ${rawEvent}")
+    println(s"Cannot deliver message. Adding to DLQ: ${rawEvent}")
     deadLetterQueue = deadLetterQueue :+ rawEvent
   }
 
