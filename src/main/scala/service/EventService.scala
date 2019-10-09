@@ -24,7 +24,7 @@ class EventService(serverService: ServerService) {
   private val messagesBySeqNo = new mutable.HashMap[EventSequence, Event]
 
   def eventsAsync(serverService: ServerService) = Future {
-      println(s"Listening for events on ${serverService.eventServerSocket.getLocalPort}")
+    println(s"Listening for events on ${serverService.eventServerSocket.getLocalPort}")
     println("1")
       val eventSocket = serverService.eventServerSocket.accept()
     println("2")

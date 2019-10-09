@@ -13,7 +13,7 @@ class UserClientsService(serverService: ServerService) {
 
   def clientsAsync(serverService: ServerService) = Future {
 
-    println(s"Listening for client requests on ${AppConfig.applicationConfig.usersClientPort}")
+    println(s"Listening for client requests on ${serverService.usersServerSocket.getLocalPort}")
     val usersSocket = serverService.usersServerSocket.accept()
     val bufferedSource = Source.fromInputStream(usersSocket.getInputStream())
 
