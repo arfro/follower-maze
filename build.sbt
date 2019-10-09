@@ -9,7 +9,6 @@ libraryDependencies ++= {
 
   Seq(
     "com.typesafe" % "config" % typesafeConfigVersion,
-    "org.scalactic" %% "scalactic" % scalaTestVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
     "org.mockito" % "mockito-core" % mockitoVersion % "test"
   )
