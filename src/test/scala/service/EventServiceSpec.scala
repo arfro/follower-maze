@@ -1,24 +1,24 @@
 package service
 
 import fixtures.DeadLetterQueueSpecFixture
-import model.alias.Aliases.EventMessageRaw
-import model.error.EventMessageFormatError
-import model.event._
 import tests.UnitTest
-import util.converters.MessageConverter
-
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
 
 // This contains only dead letter queue tests
 class EventServiceSpec extends UnitTest with DeadLetterQueueSpecFixture {
 
-  "DeadLetterQueue - extractEventMessage" should "extract Event of type Follow" in {
+  "DeadLetterQueue" should "contain the message if format is incorrect - empty Strings as parts of a message" in {
 
   }
-  it should "extract Event of type Unfollow" in {
-//    val raw: EventMessageRaw = "231|U|222|55"
-//    val expected = Unfollow(231, 222, 55, raw)
-//    MessageConverter.convertEventMessageRawToEvent(raw) shouldBe Right(expected)
+  it should "contain the message if format is incorrect - empty string" in {
+
+  }
+  it should "contain the message if format is incorrect - too many parts of the message" in {
+
+  }
+  it should "contain the message if user is offline" in {
+
+  }
+  it should "be empty if message is delivered correctly" in {
+
   }
 }
