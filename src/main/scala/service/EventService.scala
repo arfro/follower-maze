@@ -18,21 +18,23 @@ class EventService(serverService: ServerService) {
 
   /***
    * Improvements:
-   * - I prefer to use immutable data structures
+   * - I would prefer to use immutable data structures
    * */
-  val followersRegistry = new mutable.HashMap[UserId, Set[UserId]]
-  val messagesBySeqNo = new mutable.HashMap[EventSequence, Event]
+  private val followersRegistry = new mutable.HashMap[UserId, Set[UserId]]
+  private val messagesBySeqNo = new mutable.HashMap[EventSequence, Event]
 
-  val eventsAsync = Future {
+  def eventsAsync(serverService: ServerService) = Future {
       println(s"Listening for events on ${serverService.eventServerSocket.getLocalPort}")
+    println("1")
       val eventSocket = serverService.eventServerSocket.accept()
+    println("2")
 
       for {
         reader <- Try(new BufferedReader(new InputStreamReader(eventSocket.getInputStream())))
         _ = readFromBufferToHashMap(reader)
         _ = playEventsFromHashMapInSequence(messagesBySeqNo)
         _ = reader.close()
-        _ = serverService.eventServerSocket.close()
+        _ = eventSocket.close()
       } yield Unit
   }
 

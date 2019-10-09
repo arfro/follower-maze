@@ -14,9 +14,13 @@ object Main extends App with ConfigModule with ServerModule with ClientModule {
     /**
      * General improvements/notes:
      * - would add logging instead of printing
+     * - would have the server run continuously
      * */
-
-    Await.result(Future.sequence(Seq(eventService.eventsAsync, userService.clientsAsync)), Duration.Inf)
+     Await.result(Future.sequence(
+       Seq(
+         eventService.eventsAsync(serverService),
+         userService.clientsAsync(serverService))),
+       Duration.Inf)
 
     println(s"Dead letter queue: ${DeadLetterQueue.getDeadLetterQueue}")
 
