@@ -1,7 +1,7 @@
 ## My notes
 
 ### General approach to refactor
-In my experience general refactors as this one can quickly turn out to be messy and rushing can be fatal so my usual approach is to take baby steps such as:
+In my experience general refactors as this one can quickly turn out to be messy and rushing can result in a disaster so my usual approach is to take baby steps such as:
 1. Read the code, understand it and add obvious TODOs. Also mark with comments where code is unclear or maybe a class used I'm not familiar with
 2. Sketch out the big picture and add/improve models (in this case: add)
 3. Create an empty structure skeleton of the project without yet moving code
