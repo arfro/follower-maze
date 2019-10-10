@@ -35,6 +35,8 @@ I would replay the messages the are not delivered because the user was offline a
 I would perhaps purge the incorrect format messages, but not right away though. After some time when I know the average numbers of incorrect format messages (e.g. per day) I would set the alert on it. A large peak in those could indicate unhealthy behaviour from some clients which should be investigated. 
 
 ### Testing
+Test the code with `sbt test`
+
 Even though adding tests for part 1 was not in scope I decided to add a little bit for the new code I introduced. I like to have any converters/exporters thoroughly tested (especially if they are a brand new addition to the codebase). It's an area that can cause a lot of problems should edge cases scenarios not be properly covered. 
 Speaking of this, you will notice one ignored test - as I didn't want to expand the time budgeted for the task any further I decided to leave as is. Please see `Improvements and notes` for explanation.
 
