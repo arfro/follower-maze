@@ -2,11 +2,9 @@ package config
 
 import com.typesafe.config.ConfigFactory
 
-// Sum ADT
-
 sealed trait Configuration {
 
-  val configFactory = ConfigFactory.load() // 3rd party libraries are not allowed but this maybe is justified? makes the code look nice
+  val configFactory = ConfigFactory.load()
 
 }
 

@@ -8,7 +8,7 @@ object DeadLetterQueue {
 
   /**
    * Improvements:
-   * - would not use vars, getters or setters in production, this is just to simulate storage of erroneous messages
+   * - would not use vars, getters or setters, this is just to simulate storage of erroneous messages in a queue
    ***/
   private var deadLetterQueue: Queue[EventMessageRaw] = Queue()
 

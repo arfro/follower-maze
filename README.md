@@ -47,6 +47,7 @@ Things I would not ship to prod as is:
 Things I would definitely push to improve:
 - definitely reduce (ideally: remove) the usage of mutable data structures. It would be ideal to use immutable structures.
 - get rid of vars, which ties up with the first point too around mutability
+- remove all `null`s - find alternative ways for achieving the same check
 - add better error handling and remove or significantly reduce the amount of `Unit`s returned.
 - add logging instead of printing
 - perhaps use a third party tool for dependency injection as the self type technique can create quite an obfuscated code very quick 

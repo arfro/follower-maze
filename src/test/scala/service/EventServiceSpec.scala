@@ -4,10 +4,6 @@ import fixtures.DeadLetterQueueSpecFixture
 import tests.UnitTest
 import util.DeadLetterQueue
 
-import scala.collection.mutable
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future}
-
 class EventServiceSpec extends UnitTest with DeadLetterQueueSpecFixture {
 
   "DeadLetterQueue" should "contain the message if format is incorrect - empty Strings as parts of a message" in {

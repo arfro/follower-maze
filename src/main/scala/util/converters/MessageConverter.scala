@@ -29,7 +29,7 @@ object MessageConverter {
   /**
    * Improvements:
    * - wouldn't ship to prod like this as there could be messages that contain Strings e.g. abc|abc|abc|abc. This would
-   * throw an exception on e.g. "abc".toLong. For prod ready I would add a proper error handling and parsing
+   * throw an exception on e.g. "abc".toLong. For prod I would add a proper error handling and parsing
    */
   private def createEventInner(messageAsArray: Array[String], rawEventMessage: EventMessageRaw): Either[EventMessageFormatError, Event] = {
     messageAsArray(1) match {

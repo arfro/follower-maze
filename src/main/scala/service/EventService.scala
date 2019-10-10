@@ -115,7 +115,7 @@ class EventService(serverService: ServerService) {
 
   /**
    * Improvements:
-   * - not a big fan of using null even in "safe" cases as this one, I would probably seek another way, wouldn't ship like this
+   * - not a big fan of using null even in "safe" cases as this one
    */
   private def readFromBufferToHashMap(reader: BufferedReader): Unit =
       Iterator.continually(reader.readLine())

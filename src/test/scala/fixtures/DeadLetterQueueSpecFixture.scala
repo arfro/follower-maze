@@ -18,23 +18,22 @@ import ExecutionContext.Implicits.global
 
 trait DeadLetterQueueSpecFixture extends MockitoSugar {
 
+  // mocks - config
   private val config = mock[ApplicationConfig]
 
+  // event related mocks and stubbing enablers
   private val eventServerSocketMock = mock[ServerSocket]
   private val eventSocketMock = mock[Socket]
   private val outputStreamEvent = new ByteArrayOutputStream()
-
-  private val clientServerSocketMock = mock[ServerSocket]
-  private val clientSocketMock = mock[Socket]
-  private val outputStreamClient = new ByteArrayOutputStream()
-
-  //event
   Mockito.when(eventServerSocketMock.getLocalPort).thenReturn(24222)
   Mockito.when(eventServerSocketMock.accept()).thenReturn(eventSocketMock)
   Mockito.when(eventSocketMock.getLocalPort).thenReturn(24222)
   Mockito.when(eventSocketMock.getOutputStream()).thenReturn(outputStreamEvent)
 
-  // client
+  // client related mocks and stubbing enablers
+  private val clientServerSocketMock = mock[ServerSocket]
+  private val clientSocketMock = mock[Socket]
+  private val outputStreamClient = new ByteArrayOutputStream()
   Mockito.when(clientServerSocketMock.getLocalPort).thenReturn(24224)
   Mockito.when(clientServerSocketMock.accept()).thenReturn(clientSocketMock)
   Mockito.when(clientSocketMock.getLocalPort).thenReturn(24224)
@@ -46,7 +45,6 @@ trait DeadLetterQueueSpecFixture extends MockitoSugar {
     override val usersServerSocket: ServerSocket = clientServerSocketMock
     override val clientPool: TrieMap[UserId, Socket] = new TrieMap()
   }
-
   private val eventService = new EventService(serverService)
   private val userService = new UserClientsService(serverService)
 
