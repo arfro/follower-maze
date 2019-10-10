@@ -32,7 +32,7 @@ I would store a reason for why each of the messages is being in dead letter queu
 
 I would eventually replay the messages the are not delivered because the user was offline although I think that messages which are not delivered due to that reason don't really belong in a dead letter queue and definitely shouldn't be replayed blindly until success. Perhaps they should be stored in another queue which is pulled from on user log in (or in other words: on addition to the client pool)
 
-I would perhaps purge the incorrect format messages, but not right away though. After some time when I know the average numbers of incorrect format messages (e.g. per day) I would set the alert on it. A large peak in those could indicate unhealthy behaviour from some clients which should be investigated. 
+I would purge the incorrect format messages, but not right away though. After some time when I know the average numbers of incorrect format messages (e.g. per day) I would set the alert on it. A large peak in those could indicate unhealthy behaviour from some clients which should be investigated. 
 
 ### Testing
 Test the code with `sbt test`
