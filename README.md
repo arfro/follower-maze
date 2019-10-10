@@ -30,7 +30,7 @@ It's durable and can be monitored, there could be alerts set up that notify the 
 
 I would store a reason for why each of the messages is being in dead letter queue (I already took the first step which is to model message related error case classes, see `EventError`). 
 
-I would replay the messages the are not delivered because the user was offline although I think that messages which are not delivered due to that reason don't really belong in a dead letter queue. Perhaps they should be stored in another queue which is pulled from on user log in (or in other words: on addition to the client pool)
+I would eventually replay the messages the are not delivered because the user was offline although I think that messages which are not delivered due to that reason don't really belong in a dead letter queue and definitely shouldn't be replayed blindly until success. Perhaps they should be stored in another queue which is pulled from on user log in (or in other words: on addition to the client pool)
 
 I would perhaps purge the incorrect format messages, but not right away though. After some time when I know the average numbers of incorrect format messages (e.g. per day) I would set the alert on it. A large peak in those could indicate unhealthy behaviour from some clients which should be investigated. 
 
