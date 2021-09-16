@@ -1,7 +1,7 @@
 ## My notes
 
 ### General approach to refactor
-In my experience general refactors as this one can quickly turn out to be messy and rushing can result in a disaster so my usual approach is to take baby steps such as:
+My usual approach to a general refactor is to take small steps such as:
 1. Read the code, understand it and add obvious TODOs. Also mark with comments where code is unclear or maybe a class used I'm not familiar with
 2. Sketch out the big picture and add/improve models (in this case: add)
 3. Create an empty structure skeleton of the project without yet moving code
@@ -22,7 +22,7 @@ I use three 3rd party libraries, two of them in tests and one for config (I real
 - Mockito for mocking dependencies on socket related tests
 
 ### Dead letter queue
-I decided to take a very basic and simple approach for the dead letter queue - it's simply a mutable `Queue` data structure.
+I decided to take a very basic and simple approach for the dead letter queue - a mutable `Queue` data structure.
 Even though it is significantly slower than Vector (which is on the other hand the best choice for concurrent code) it was important for me to keep the FIFO functionality to avoid situations such as sending unfollow message before follow.
 
 In production, I of course wouldn't have a dead letter queue in the application itself as it's not durable and hence defeats the purpose of storing the erroneous messages should the application fail. A great choice for that would be e.g. AWS SQS queue.
@@ -52,9 +52,6 @@ Things I would definitely push to improve:
 - add logging instead of printing
 - perhaps use a third party tool for dependency injection as the self type technique can create quite an obfuscated code very quick 
 - use a third party library to wrap up IO code and enhance error handling, especially in for comprehensions (e.g. Cats)
-
-### Difficulty
-The task was a lot of fun and I feel like I learnt a little bit too as I haven't worked very close and/or tested socket communications before.
 
 ______________________
 
